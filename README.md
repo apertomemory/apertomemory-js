@@ -32,33 +32,46 @@ npm install apertomemory
 
 ## Usage
 
+Reading a vault (exported with `amem export` from the
+[Python CLI](https://github.com/apertomemory/apertomemory), or by any
+conforming implementation):
+
+```ts
+import { readAmem } from "apertomemory";
+import { readFileSync } from "node:fs";
+
+const bytes = new Uint8Array(readFileSync("my-memory.amem"));
+const vault = readAmem(bytes, "your passphrase");
+
+for (const o of vault.objects) {
+  console.log(o.scope, o.content, o.signatureVerified); // true - always checked
+}
+```
+
+Sealing and opening single objects with the low-level API:
+
 ```ts
 import {
   masterFromPassphrase, identityFromMaster,
-  newScopeKek, newDek, wrapKek, wrapDek,
-  seal, openSealed, readAmem,
+  newDek, seal, openSealed,
 } from "apertomemory";
 
-// derive identity from a passphrase
 const salt = crypto.getRandomValues(new Uint8Array(16));
-const identity = identityFromMaster(masterFromPassphrase("my passphrase", salt));
-
-// seal a memory (sign-then-encrypt: Ed25519 inside AES-256-GCM)
+const identity = identityFromMaster(masterFromPassphrase("your passphrase", salt));
 const scopeId = crypto.getRandomValues(new Uint8Array(16));
 const dek = newDek();
+
 const { sealed } = seal(
   { content: "prefers concise answers", memType: "semantic", tags: ["style"] },
   identity, scopeId, dek,
 );
 
-// open and verify
-const obj = openSealed(sealed, dek, identity.signPub);
-// obj.signatureVerified === true
-
-// open a full .amem export (from any conforming implementation)
-const vault = readAmem(amemFileBytes, "my passphrase");
-// vault.objects[i].content, .scope, .signatureVerified ...
+const obj = openSealed(sealed, dek, identity.signPub); // throws on tampering or wrong key
 ```
+
+New to ApertoMemory? Start from the
+[5-minute getting started guide](https://github.com/apertomemory/apertomemory/blob/main/GETTING-STARTED.md) -
+vault, CLI, and connecting your AI assistant via MCP.
 
 ## Conformance
 
