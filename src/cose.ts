@@ -14,9 +14,11 @@ const EMPTY = new Uint8Array(0);
 
 // ---------- COSE_Sign1 ----------
 
-export function encodeSign1(payload: Uint8Array, signSeed: Uint8Array, kid: Uint8Array): Uint8Array {
+export function encodeSign1(
+  payload: Uint8Array, signSeed: Uint8Array, kid: Uint8Array, externalAad: Uint8Array = EMPTY,
+): Uint8Array {
   const phdr = encodeCanonical(new Map<number, unknown>([[ALG, EDDSA], [KID, kid]]));
-  const sigStructure = encodeCanonical(["Signature1", phdr, EMPTY, payload]);
+  const sigStructure = encodeCanonical(["Signature1", phdr, externalAad, payload]);
   const signature = ed25519.sign(sigStructure, signSeed);
   return encodeCanonical(new Tag(TAG_SIGN1, [phdr, new Map(), payload, signature]));
 }
@@ -37,22 +39,24 @@ export function decodeSign1(bytes: Uint8Array): Sign1 {
   return { protectedBytes: phdr, kid: ph.get(KID) as Uint8Array | undefined, payload, signature };
 }
 
-export function verifySign1(msg: Sign1, signPub: Uint8Array): boolean {
-  const sigStructure = encodeCanonical(["Signature1", msg.protectedBytes, EMPTY, msg.payload]);
+export function verifySign1(msg: Sign1, signPub: Uint8Array, externalAad: Uint8Array = EMPTY): boolean {
+  const sigStructure = encodeCanonical(["Signature1", msg.protectedBytes, externalAad, msg.payload]);
   return ed25519.verify(msg.signature, sigStructure, signPub);
 }
 
 // ---------- COSE_Encrypt0 ----------
 
-export function encodeEnc0(plaintext: Uint8Array, dek: Uint8Array, nonce: Uint8Array): Uint8Array {
+export function encodeEnc0(
+  plaintext: Uint8Array, dek: Uint8Array, nonce: Uint8Array, externalAad: Uint8Array = EMPTY,
+): Uint8Array {
   if (nonce.length !== 12) throw new Error("nonce must be 96 bits");
   const phdr = encodeCanonical(new Map<number, unknown>([[ALG, A256GCM]]));
-  const aad = encodeCanonical(["Encrypt0", phdr, EMPTY]);
+  const aad = encodeCanonical(["Encrypt0", phdr, externalAad]);
   const ciphertext = gcm(dek, nonce, aad).encrypt(plaintext);
   return encodeCanonical(new Tag(TAG_ENC0, [phdr, new Map([[IV, nonce]]), ciphertext]));
 }
 
-export function decodeEnc0(bytes: Uint8Array, dek: Uint8Array): Uint8Array {
+export function decodeEnc0(bytes: Uint8Array, dek: Uint8Array, externalAad: Uint8Array = EMPTY): Uint8Array {
   const t = decodeCbor(bytes);
   if (!(t instanceof Tag) || t.tag !== TAG_ENC0) throw new Error("not a COSE_Encrypt0");
   const [phdr, uhdr, ciphertext] = t.contents as [Uint8Array, Map<number, unknown>, Uint8Array];
@@ -60,6 +64,6 @@ export function decodeEnc0(bytes: Uint8Array, dek: Uint8Array): Uint8Array {
   if (ph.get(ALG) !== A256GCM) throw new Error("unexpected AEAD algorithm");
   const nonce = uhdr.get(IV) as Uint8Array;
   if (!nonce || nonce.length !== 12) throw new Error("missing or invalid IV");
-  const aad = encodeCanonical(["Encrypt0", phdr, EMPTY]);
+  const aad = encodeCanonical(["Encrypt0", phdr, externalAad]);
   return gcm(dek, nonce, aad).decrypt(ciphertext);
 }

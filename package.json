@@ -1,7 +1,7 @@
 {
   "name": "apertomemory",
-  "version": "0.1.1",
-  "description": "TypeScript implementation of the ApertoMemory format: portable, client-side-encrypted, user-owned AI memory (draft-ferro-apertomemory)",
+  "version": "0.2.1",
+  "description": "TypeScript implementation of the ApertoMemory format (format_version 2): portable, client-side-encrypted, user-owned AI memory with signed, author-bound provenance (draft-ferro-apertomemory)",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
