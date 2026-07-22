@@ -29,6 +29,9 @@ export interface Identity {
 const hkdf32 = (ikm: Uint8Array, info: Uint8Array): Uint8Array =>
   hkdf(sha256, ikm, undefined, info, 32);
 
+/** author_key_id = first 8 bytes of SHA-256 of the Ed25519 public key. */
+export const keyId = (signPub: Uint8Array): Uint8Array => sha256(signPub).slice(0, 8);
+
 export function masterFromPassphrase(passphrase: string, salt: Uint8Array): Uint8Array {
   return argon2id(utf8(passphrase), salt, ARGON2_PARAMS);
 }
@@ -38,7 +41,7 @@ export function identityFromMaster(master: Uint8Array): Identity {
   const kaSeed = hkdf32(master, INFO_KA);
   const signPub = ed25519.getPublicKey(signSeed);
   const kaPub = x25519.getPublicKey(kaSeed);
-  const authorKeyId = sha256(signPub).slice(0, 8);
+  const authorKeyId = keyId(signPub);
   return { signSeed, signPub, kaSeed, kaPub, authorKeyId };
 }
 
