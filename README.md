@@ -1,7 +1,8 @@
 # apertomemory (TypeScript)
 
 [![CI](https://github.com/apertomemory/apertomemory-js/actions/workflows/ci.yml/badge.svg)](https://github.com/apertomemory/apertomemory-js/actions/workflows/ci.yml)
-[![IETF I-D](https://img.shields.io/badge/IETF-draft--ferro--apertomemory-blue)](https://datatracker.ietf.org/doc/draft-ferro-apertomemory/)
+[![npm](https://img.shields.io/npm/v/apertomemory)](https://www.npmjs.com/package/apertomemory)
+[![IETF I-D](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdatatracker.ietf.org%2Fapi%2Fv1%2Fdoc%2Fdocument%2Fdraft-ferro-apertomemory%2F%3Fformat%3Djson&query=%24.rev&label=IETF&prefix=draft-ferro-apertomemory-&color=blue)](https://datatracker.ietf.org/doc/draft-ferro-apertomemory/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 TypeScript implementation of the **ApertoMemory** format: portable,
